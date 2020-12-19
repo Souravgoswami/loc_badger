@@ -1,5 +1,5 @@
 class IndexController < ApplicationController
-	WAIT = 300
+	DATA_FILE = File.join(Rails.root, 'data.txt')
 	GRADIENTS = [
 		%w(#3eb #55f),
 		%w(#f55 #55f),
@@ -7,10 +7,12 @@ class IndexController < ApplicationController
 		%w(#f55 #55f #3eb)
 	]
 
-	@@data = ''.freeze
-
 	def get_json
-		@@data = IO.read(File.join(Rails.root, 'data.txt'))
+		@@data = if File.readable?(DATA_FILE)
+			IO.read(DATA_FILE)
+		else
+			''
+		end
 		# @@data = %Q([{"language":"Ruby","files":20,"lines":2862,"blanks":330,"comments":1161,"linesOfCode":1371},{"language":"Markdown","files":1,"lines":1277,"blanks":334,"comments":0,"linesOfCode":943},{"language":"C","files":3,"lines":203,"blanks":42,"comments":0,"linesOfCode":161},{"language":"Plain Text","files":1,"lines":21,"blanks":4,"comments":0,"linesOfCode":17},{"language":"Total","files":25,"lines":4363,"blanks":710,"comments":1161,"linesOfCode":2492},{"language":"Ruby","files":20,"lines":2862,"blanks":330,"comments":1161,"linesOfCode":1371},{"language":"Markdown","files":1,"lines":1277,"blanks":334,"comments":0,"linesOfCode":943},{"language":"C","files":3,"lines":203,"blanks":42,"comments":0,"linesOfCode":161},{"language":"Plain Text","files":1,"lines":21,"blanks":4,"comments":0,"linesOfCode":17},{"language":"Total","files":25,"lines":4363,"blanks":710,"comments":1161,"linesOfCode":2492}])
 
 		JSON.parse(@@data).tap(&:uniq!) rescue []
@@ -35,11 +37,7 @@ class IndexController < ApplicationController
 		size = 1 if size == 0
 
 		direction = rand < 0.5
-		gradient_direction = if rand < 0.5
-			%Q(x1="0%" y1="0%" x2="100%" y2="0%")
-		else
-			%Q(x1="0%" y1="0%" x2="0%" y2="100%")
-		end
+		gradient_direction = rand < 0.5 ? %Q(x1="0%" y1="0%" x2="100%" y2="0%") : %Q(x1="0%" y1="0%" x2="0%" y2="100%")
 
 		gradients = grad.map.with_index { |x, i|
 			<<~EOF.freeze
