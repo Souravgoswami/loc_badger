@@ -6,5 +6,5 @@
 
 # Heroku
 <div style="text-align:center">
-	<img src="https://linuxstatloc.herokuapp.com/badge.svg" width="600px">
+	<img src="https://linuxstatloc.herokuapp.com/badge.svg" width="350px">
 </div>
