@@ -13,7 +13,7 @@ class IndexController < ApplicationController
 		else
 			''
 		end
-		# @@data = %Q([{"language":"Ruby","files":20,"lines":2862,"blanks":330,"comments":1161,"linesOfCode":1371},{"language":"Markdown","files":1,"lines":1277,"blanks":334,"comments":0,"linesOfCode":943},{"language":"C","files":3,"lines":203,"blanks":42,"comments":0,"linesOfCode":161},{"language":"Plain Text","files":1,"lines":21,"blanks":4,"comments":0,"linesOfCode":17},{"language":"Total","files":25,"lines":4363,"blanks":710,"comments":1161,"linesOfCode":2492},{"language":"Ruby","files":20,"lines":2862,"blanks":330,"comments":1161,"linesOfCode":1371},{"language":"Markdown","files":1,"lines":1277,"blanks":334,"comments":0,"linesOfCode":943},{"language":"C","files":3,"lines":203,"blanks":42,"comments":0,"linesOfCode":161},{"language":"Plain Text","files":1,"lines":21,"blanks":4,"comments":0,"linesOfCode":17},{"language":"Total","files":25,"lines":4363,"blanks":710,"comments":1161,"linesOfCode":2492}])
+		# @@data = %Q([{"language":"Ruby","files":20,"lines":2862,"blanks":330,"comments":1161,"lines":1371},{"language":"Markdown","files":1,"lines":1277,"blanks":334,"comments":0,"lines":943},{"language":"C","files":3,"lines":203,"blanks":42,"comments":0,"lines":161},{"language":"Plain Text","files":1,"lines":21,"blanks":4,"comments":0,"lines":17},{"language":"Total","files":25,"lines":4363,"blanks":710,"comments":1161,"lines":2492},{"language":"Ruby","files":20,"lines":2862,"blanks":330,"comments":1161,"lines":1371},{"language":"Markdown","files":1,"lines":1277,"blanks":334,"comments":0,"lines":943},{"language":"C","files":3,"lines":203,"blanks":42,"comments":0,"lines":161},{"language":"Plain Text","files":1,"lines":21,"blanks":4,"comments":0,"lines":17},{"language":"Total","files":25,"lines":4363,"blanks":710,"comments":1161,"lines":2492}])
 
 		JSON.parse(@@data).tap(&:uniq!) rescue []
 	end
@@ -27,7 +27,7 @@ class IndexController < ApplicationController
 		@json_data = @json_data
 
 		@total = @json_data.find { |x| x['language'].downcase == 'total' }.to_h
-		@total_loc = @total['linesOfCode'].to_i
+		@total_loc = @total['lines'].to_i
 
 		# Gradient colour
 		grad = GRADIENTS.sample
@@ -64,7 +64,7 @@ class IndexController < ApplicationController
 						#{x['language']}:
 
 						<tspan x="94">
-							Lines #{x['linesOfCode']} (#{sprintf "%.2f", x['linesOfCode'].to_i.*(100).fdiv(@total_loc)}%)
+							Lines #{x['lines']} (#{sprintf "%.2f", x['lines'].to_i.*(100).fdiv(@total_loc)}%)
 						</tspan>
 					</text>
 					<g transform="translate(3 #{y - 10})" style="filter:url(#shadow)">#{svg_tag(x['language'].strip.split.join.downcase)}</g>
