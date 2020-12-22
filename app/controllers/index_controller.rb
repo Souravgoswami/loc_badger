@@ -7,15 +7,21 @@ class IndexController < ApplicationController
 		%w(#f55 #55f #3eb)
 	]
 
+	DATA_UPDATE_INTERVAL = 900
+
+	@@update_time = Time.now - DATA_UPDATE_INTERVAL
+
 	def get_json
-		@@data = if File.readable?(DATA_FILE)
+		update_data()
+
+		data = if File.readable?(DATA_FILE)
 			IO.read(DATA_FILE)
 		else
 			''
 		end
 		# @@data = %Q([{"language":"Ruby","files":20,"lines":2862,"blanks":330,"comments":1161,"lines":1371},{"language":"Markdown","files":1,"lines":1277,"blanks":334,"comments":0,"lines":943},{"language":"C","files":3,"lines":203,"blanks":42,"comments":0,"lines":161},{"language":"Plain Text","files":1,"lines":21,"blanks":4,"comments":0,"lines":17},{"language":"Total","files":25,"lines":4363,"blanks":710,"comments":1161,"lines":2492},{"language":"Ruby","files":20,"lines":2862,"blanks":330,"comments":1161,"lines":1371},{"language":"Markdown","files":1,"lines":1277,"blanks":334,"comments":0,"lines":943},{"language":"C","files":3,"lines":203,"blanks":42,"comments":0,"lines":161},{"language":"Plain Text","files":1,"lines":21,"blanks":4,"comments":0,"lines":17},{"language":"Total","files":25,"lines":4363,"blanks":710,"comments":1161,"lines":2492}])
 
-		JSON.parse(@@data).tap(&:uniq!) rescue []
+		JSON.parse(data).tap(&:uniq!) rescue []
 	end
 
 	def json
@@ -94,6 +100,28 @@ class IndexController < ApplicationController
 			IO.read(svg_file)
 		else
 			''.freeze
+		end
+	end
+
+	private
+	def update_data
+		if Time.now - @@update_time > DATA_UPDATE_INTERVAL
+			@@update_time = Time.now
+
+			Thread.new {
+				begin
+					data = Net::HTTP.get(URI("https://api.codetabs.com/v1/loc/?github=souravgoswami/linux_stat".freeze))
+					data_minified = data.lines.map!(&:strip).join
+
+					# Check if it's a vaild JSON data
+					JSON.parse!(data_minified, max_nexting: 3)
+					IO.write(DATA_FILE, data_minified)
+				rescue Exception
+					sleep 1
+					puts "Caught Exception: #{$!}"
+					retry
+				end
+			}
 		end
 	end
 end
