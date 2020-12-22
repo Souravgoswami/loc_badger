@@ -13,3 +13,6 @@ group :development do
   gem 'listen', '~> 3.3'
   gem 'spring'
 end
+
+gem 'irb', require: false
+gem 'rdoc', require: false

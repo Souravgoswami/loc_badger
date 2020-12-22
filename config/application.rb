@@ -10,6 +10,7 @@ require "sprockets/railtie"
 
 require 'net/https'
 require 'json'
+require 'zlib'
 
 Bundler.require(*Rails.groups)
 

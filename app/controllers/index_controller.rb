@@ -19,7 +19,8 @@ class IndexController < ApplicationController
 	end
 
 	def json
-		render json: get_json
+		response.headers['Content-Encoding'] = 'deflate'
+		render plain: Zlib.deflate(JSON.generate(get_json), 9), content_type: 'application/json'
 	end
 
 	def generate_badge
@@ -78,8 +79,11 @@ class IndexController < ApplicationController
 			EOF
 		end
 
+		response.headers['Content-Encoding'] = 'deflate'
 		return_svg = svg.lines.each(&:strip!).join << '</g></svg>'.freeze
-		render plain: return_svg, content_type: 'image/svg+xml'.freeze
+
+		deflated = Zlib.deflate(return_svg, 9)
+		render plain: deflated, content_type: 'image/svg+xml'.freeze
 	end
 
 	def svg_tag(file)
