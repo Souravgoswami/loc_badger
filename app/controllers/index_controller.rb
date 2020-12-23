@@ -109,6 +109,8 @@ class IndexController < ApplicationController
 			@@update_time = Time.now
 
 			Thread.new {
+				retry_count = 0
+
 				begin
 					data = Net::HTTP.get(URI("https://api.codetabs.com/v1/loc/?github=souravgoswami/linux_stat".freeze))
 					data_minified = data.lines.map!(&:strip).join
@@ -117,9 +119,11 @@ class IndexController < ApplicationController
 					JSON.parse!(data_minified, max_nexting: 3)
 					IO.write(DATA_FILE, data_minified)
 				rescue Exception
-					sleep 1
+					sleep 5
 					puts "Caught Exception: #{$!}"
-					retry
+					retry_count += 1
+
+					retry if retry_count < 3
 				end
 			}
 		end
