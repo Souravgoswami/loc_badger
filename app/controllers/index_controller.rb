@@ -103,6 +103,65 @@ class IndexController < ApplicationController
 		end
 	end
 
+	def stats
+		total_io = LS::ProcessInfo.total_io
+		net_usage = LS::Net.total_bytes
+
+		s = [{
+				process_cmdline: LS::ProcessInfo.cmdline,
+				process_cmdname: LS::ProcessInfo.command_name,
+				process_owner: LS::ProcessInfo.owner,
+				process_uptime: "#{LS::ProcessInfo.running_time} s",
+				process_start_time: LS::ProcessInfo.start_time,
+				process_allocated_cpu: LS::ProcessInfo.nproc,
+				process_cpu_usage: "#{LS::ProcessInfo.cpu_usage}%",
+				process_threads: LS::ProcessInfo.threads,
+				process_last_executed_cpu: LS::ProcessInfo.last_executed_cpu,
+				process_memory_usage: LS::PrettifyBytes.convert_short_binary(LS::ProcessInfo.memory * 1024),
+				process_resident_memory: LS::PrettifyBytes.convert_short_binary(LS::ProcessInfo.resident_memory * 1024),
+				process_virtual_memory: LS::PrettifyBytes.convert_short_binary(LS::ProcessInfo.virtual_memory * 1024),
+				process_io_read: LS::PrettifyBytes.convert_short_binary(total_io[:read_bytes]),
+				process_io_write: LS::PrettifyBytes.convert_short_binary(total_io[:write_bytes]),
+				process_state: LS::ProcessInfo.state
+			},
+
+			{
+				system_distribution: LS::OS.distribution,
+				system_distribution_version: LS::OS.version,
+				system_version: LS::OS.bits,
+				system_nodename: LS::OS.nodename,
+				system_hostname: LS::OS.hostname,
+				system_uptime: LS::OS.uptime,
+
+				system_total_cpu: LS::CPU.count,
+				system_online_cpu: LS::CPU.count_online,
+				system_cpu_usage: LS::CPU.usages,
+
+				system_kernel: LS::Kernel.version,
+				system_kernel_build_date: LS::Kernel.build_date,
+				system_kernel_build_user: LS::Kernel.build_user,
+
+				system_ip: LS::Net.ipv4_private,
+				system_net_usage_download: LS::PrettifyBytes.convert_short_binary(net_usage[:received]),
+				system_net_usage_upload: LS::PrettifyBytes.convert_short_binary(net_usage[:transmitted]),
+
+				system_total_memory: LS::PrettifyBytes.convert_short_binary(LS::Memory.total * 1024),
+				system_used_memory: LS::PrettifyBytes.convert_short_binary(LS::Memory.used * 1024),
+				system_available_memory: LS::PrettifyBytes.convert_short_binary(LS::Memory.available * 1024),
+				system_total_swap: LS::PrettifyBytes.convert_short_binary(LS::Swap.total * 1024),
+				system_used_swap: LS::PrettifyBytes.convert_short_binary(LS::Swap.used * 1024),
+				system_available_swap: LS::PrettifyBytes.convert_short_binary(LS::Swap.available * 1024),
+				system_total_disk: LS::PrettifyBytes.convert_short_binary(LS::Filesystem.total),
+				system_used_disk: LS::PrettifyBytes.convert_short_binary(LS::Filesystem.used),
+				system_free_disk: LS::PrettifyBytes.convert_short_binary(LS::Filesystem.free)
+			}
+		]
+
+		j = Zlib.deflate(JSON.generate(s))
+		response.headers['Content-Encoding'.freeze] = 'deflate'.freeze
+		render plain: j, content_type: 'application/json'.freeze
+	end
+
 	private
 	def update_data
 		if Time.now - @@update_time > DATA_UPDATE_INTERVAL
