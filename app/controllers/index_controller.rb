@@ -10,6 +10,7 @@ class IndexController < ApplicationController
 	DATA_UPDATE_INTERVAL = 900
 
 	@@update_time = Time.now - DATA_UPDATE_INTERVAL
+	@@badge_requests = 0
 
 	def get_json
 		update_data()
@@ -89,6 +90,7 @@ class IndexController < ApplicationController
 		return_svg = svg.lines.each(&:strip!).join << '</g></svg>'.freeze
 
 		deflated = Zlib.deflate(return_svg, 9)
+		@@badge_requests += 1
 		render plain: deflated, content_type: 'image/svg+xml'.freeze
 	end
 
@@ -107,7 +109,12 @@ class IndexController < ApplicationController
 		total_io = LS::ProcessInfo.total_io
 		net_usage = LS::Net.total_bytes
 
-		s = [{
+		s = [
+			{
+				badge_requests: @@badge_requests
+			},
+
+			{
 				process_cmdline: LS::ProcessInfo.cmdline,
 				process_cmdname: LS::ProcessInfo.command_name,
 				process_owner: LS::ProcessInfo.owner,
