@@ -3,4 +3,3 @@ ruby '>= 2.6.0'
 
 gem 'sinatra'
 gem 'linux_stat'
-gem 'foreman'
