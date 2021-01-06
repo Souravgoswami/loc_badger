@@ -2,8 +2,8 @@ require 'sinatra'
 require 'linux_stat'
 require 'json'
 require 'zlib'
-require_relative 'methods/badger'
-require_relative 'methods/update'
+require './methods/badger'
+require './methods/update'
 
 before {
 	headers['Content-Encoding'] = 'deflate'.freeze
