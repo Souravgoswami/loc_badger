@@ -1,3 +1,5 @@
+require 'json'
+
 module Badger
 	class << self
 		DATA_FILE ||= 'data.txt'.freeze

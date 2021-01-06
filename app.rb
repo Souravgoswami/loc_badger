@@ -2,11 +2,11 @@ require 'sinatra'
 require 'linux_stat'
 require 'json'
 require 'zlib'
-require './methods/badger'
-require './methods/update'
+require './modules/badger'
+require './modules/update'
 
 before {
-	headers['Content-Encoding'] = 'deflate'.freeze
+	headers['Content-Encoding'.freeze] = 'deflate'.freeze
 }
 
 get '/' do
@@ -22,18 +22,19 @@ get '/badge.svg' do
 end
 
 get '/json' do
-	Update.data
 	content_type :json
+	Update.data
 	Zlib.deflate(Badger.get_json.to_json, 9)
 end
 
 get '/stats' do
 	content_type :json
-	Zlib.deflate(Badger::stats.to_json, 9)
+	Zlib.deflate(Badger.stats.to_json, 9)
 end
 
 not_found do
-	content_type 'text/html'
+	content_type 'text/html'.freeze
+
 	html = <<~EOF.lines.each(&:strip!).join(?\n.freeze)
 		<!Doctype HTML><html>
 		<head><meta charset="utf-8"><title>404</title></head><body>

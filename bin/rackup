@@ -1,0 +1,12 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+
+version = ">= 0.a"
+
+if Gem.respond_to?(:activate_bin_path)
+	load Gem.activate_bin_path('rack', 'rackup', version)
+else
+	gem "rack", version
+	load Gem.bin_path("rack", "rackup", version)
+end
