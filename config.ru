@@ -1,6 +1,11 @@
-# This file is used by Rack-based servers to start the application.
+require './app'
 
-require_relative "config/environment"
+run Sinatra::Application
 
-run Rails.application
-Rails.application.load_server
+# run proc { |x|
+# 	[
+# 		200,
+# 		{'Content-Type' => 'text/plain'},
+# 		StringIO.new(generate_svg)
+# 	]
+# }
