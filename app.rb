@@ -7,6 +7,7 @@ require './modules/update'
 
 before {
 	headers['Content-Encoding'.freeze] = 'deflate'.freeze
+	headers['Cache-Control'.freeze] = 'public,no-cache'.freeze
 }
 
 get '/' do

@@ -20,15 +20,27 @@ module Badger
 				''
 			end
 
-			JSON.parse(data).tap(&:uniq!) rescue []
+			JSON.parse(data).drop(1) rescue []
 		end
 
 		def generate_svg
+			# Blacklist
+			@excluded_lines = 0
 			@json_data = get_json
-			@json_data = @json_data
 
-			@total = @json_data.find { |x| x['language'.freeze].downcase == 'total'.freeze }.to_h
-			@total_loc = @total['lines'.freeze].to_i
+			@total = @json_data.find { |x| x[0] == 'SUM' }.to_a[1].to_h
+				.tap { |_x| _x.default = 0 }
+			@total_loc = @total['blank'.freeze] + @total['comment'.freeze] + @total['code'.freeze] - @excluded_lines
+
+			@json_data.reject! { |x|
+				title = x[0]
+				lines = x[1].to_h.tap { |_x| _x.default = 0 }
+
+				if %w(svg sum).include?(title.downcase)
+					@excluded_lines += lines['blank'.freeze] + lines['comment'.freeze] + lines['code'.freeze]
+					true
+				end
+			}
 
 			# Gradient colour
 			grad = GRADIENTS.sample
@@ -47,7 +59,7 @@ module Badger
 			}.join
 
 			svg = <<~EOF
-				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 #{size * 20}">
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 #{size * 20}">
 				<defs>
 					<linearGradient id="gradient" #{gradient_direction}>#{gradients}</linearGradient>
 					<filter id="shadow"><feDropShadow dx="1" dy="1" stdDeviation="0.25" flood-color="#0002"/></filter>
@@ -58,15 +70,18 @@ module Badger
 			svg << if @json_data.size > 0
 				@json_data.map.with_index do |x, i|
 					y = i.+(1) * 18
+					title = x[0]
+					_lc = x[1].to_h.tap { |_x| _x.default = 0 }
+					_lines = _lc['blank'.freeze] + _lc['comment'.freeze] + _lc['code'.freeze]
 
 					<<~EOF
 						<text style="filter:url(#shadow);line-height:2.25" x="20" y="#{y}" font-size="10" font-family="arial" fill="#fff">
-							#{x['language'.freeze]}:
-							<tspan x="94">
-								Lines #{x['lines'.freeze]} (#{sprintf "%.2f".freeze, x['lines'.freeze].to_i.*(100).fdiv(@total_loc)}%)
+							#{title}:
+							<tspan x="130">
+								Lines #{_lines} (#{sprintf "%.2f".freeze, _lines.*(100).fdiv(@total_loc)}%)
 							</tspan>
 						</text>
-						<g transform="translate(3 #{y - 10})" style="filter:url(#shadow)">#{svg_tag(x['language'].strip.split.join.downcase)}</g>
+						<g transform="translate(3 #{y - 10})" style="filter:url(#shadow)">#{svg_tag(title.strip.split.join.downcase)}</g>
 					EOF
 				end.join(?\n.freeze)
 			else
@@ -83,7 +98,7 @@ module Badger
 
 		def svg_tag(file)
 			file << '.svg'.freeze unless file.end_with?('.svg'.freeze)
-			svg_file = File.join('assets'.freeze, file)
+			svg_file = File.join('assets'.freeze, file.split.join)
 
 			if File.readable?(svg_file)
 				IO.read(svg_file)
