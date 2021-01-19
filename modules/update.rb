@@ -13,7 +13,7 @@ module Update
 		def update!
 			FileUtils.rm_rf(File.join(Dir.pwd, 'tmp', 'linux_stat'))
 
-			system("git clone https://github.com/Souravgoswami/linux_stat.git --branch master --single-branch --depth=1 #{File.join(Dir.pwd, 'tmp', 'linux_stat')} &>#{File::NULL}")
+			system("git clone https://github.com/Souravgoswami/linux_stat.git --branch master --single-branch --depth=1 #{File.join(Dir.pwd, 'tmp', 'linux_stat')}")
 
 			data = IO.popen(
 				"#{File.join(Dir.pwd, 'bin', 'cloc')} #{File.join(Dir.pwd, 'tmp', 'linux_stat')} --json"
@@ -29,7 +29,6 @@ module Update
 
 		def data
 			if Time.now - @@update_time > DATA_UPDATE_INTERVAL
-				@@update_time = Time.now
 
 				unless @@thread.alive?
 					@@thread = Thread.new {
@@ -37,6 +36,7 @@ module Update
 
 						begin
 							update!
+							@@update_time = Time.now
 						rescue Exception
 							sleep 5
 							puts "Caught Exception: #{$!}"
