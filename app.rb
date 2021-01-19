@@ -10,29 +10,26 @@ before {
 	headers['Cache-Control'.freeze] = 'private,max-age=30'.freeze
 	headers['Age'.freeze] = '0'.freeze
 	headers['ETag'.freeze] = "W/#{Time.now.hash}#{srand}"
+	Update.data
 }
 
 get '/' do
 	content_type 'image/svg+xml'.freeze
-	Update.data
 	Zlib.deflate(Badger.generate_svg, 9)
 end
 
 get '/badge.svg' do
 	content_type 'image/svg+xml'.freeze
-	Update.data
 	Zlib.deflate(Badger.generate_svg, 9)
 end
 
 get '/svg' do
 	content_type 'image/svg+xml'.freeze
-	Update.data
 	Zlib.deflate(Badger.generate_svg, 9)
 end
 
 get '/json' do
 	content_type :json
-	Update.data
 	Zlib.deflate(Badger.get_json.to_json, 9)
 end
 
