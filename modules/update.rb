@@ -24,6 +24,7 @@ module Update
 			# Check if it's a vaild JSON data
 			JSON.parse!(data_minified, max_nesting: 3)
 			IO.write(DATA_FILE, data_minified)
+			puts "Updated data at: #{Time.now.strftime("%d %b %Y, %H:%M:%S")}"
 		end
 
 		def data
